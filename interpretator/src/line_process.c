@@ -15,36 +15,30 @@ int split_line(char* line, char*** cmd_array){
     }
     cmd_count++;
 
-    int index = 0;
-    int cmd_len = 0;
     // Формируем 2D массив
-    *cmd_array = malloc(cmd_count);
-
-    // Разбиваем на команды
-    command = strtok(line, MY_CMD_DEL);
-    cmd_len = strlen(command);
-    (*cmd_array)[index] = malloc(cmd_len + 1);
-    if ((*cmd_array)[index] == NULL) {
+    *cmd_array = malloc(cmd_count * sizeof(char*));
+    if (*cmd_array == NULL) {
         perror("Memory allocation");
         exit(EXIT_FAILURE);
     }
-    strncpy((*cmd_array)[index], command, cmd_len);
-    
-    // Разбиваем на команды
-    while (command != NULL) {
-        command = strtok(NULL, MY_CMD_DEL);
 
-        if (command != NULL){
-            index++;
-            int cmd_len = strlen(command);
-            (*cmd_array)[index] = malloc(cmd_len + 1);
-            if ((*cmd_array)[index] == NULL) {
-                perror("Memory allocation");
-                exit(EXIT_FAILURE);
-            }
-            strncpy((*cmd_array)[index], command, cmd_len);
+    // Разбиваем на команды
+    int index = 0;
+    command = strtok(line, MY_CMD_DEL);
+    while (command != NULL && index < cmd_count) {
+        int cmd_len = strlen(command);
+        (*cmd_array)[index] = malloc((cmd_len + 1)*sizeof(char));
+        if ((*cmd_array)[index] == NULL) {
+            perror("Memory allocation");
+            exit(EXIT_FAILURE);
         }
+        strncpy((*cmd_array)[index], command, cmd_len);
+        (*cmd_array)[index][cmd_len] = '\0'; // Завершаем строку нулевым символом
+
+        command = strtok(NULL, MY_CMD_DEL);
+        index++;
     }
+
 
     return cmd_count;
 }
@@ -52,7 +46,7 @@ int split_line(char* line, char*** cmd_array){
 int get_util_name(char* command, char** util_name){
     // Копирую строку для получения имени утилиты без пробелов
     int len = strlen(command);
-    char* command_copy = malloc(len + 1);
+    char* command_copy = malloc((len + 1)*sizeof(char));
     if (command_copy == NULL) {
         perror("Memory allocation");
         exit(EXIT_FAILURE);
@@ -67,7 +61,7 @@ int get_util_name(char* command, char** util_name){
     }
     int util_name_len = strlen(util);
     // Память под массив
-    *util_name = malloc(util_name_len+1);
+    *util_name = malloc((util_name_len+1)*sizeof(char));
     if (*util_name == NULL){
         perror("Memory allocation");
         exit(EXIT_FAILURE);
