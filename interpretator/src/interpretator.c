@@ -20,7 +20,6 @@ int main(){
 
     char input[MAX_LINE_SZ]; 
     char** commands;
-    char* util_name = NULL;
     int commands_count = 0;
 
     int flag = 1;
@@ -37,22 +36,31 @@ int main(){
         }
 
         commands_count = split_line(input, &commands);
+        char** utils_names = malloc(commands_count*sizeof(char*));
+        if (utils_names == NULL) {
+            perror("Memory allocation");
+            exit(EXIT_FAILURE);
+        }
+        for (int i = 0; i < commands_count; i++)
+            utils_names[i] = NULL;
+        
 
+        // Проверка
         for (int i = 0; i < commands_count; i++){
-            if (!check_util(commands[i], &util_name)){
-                //printf("Util '%s' not found\n", util_name);
+            get_util_name(commands[i], &(utils_names[i]));
+            int result = check_util(utils_names[i]);
+
+            if (result == 0){
                 utils_ok = 0;
-                //printf("util_name[%d]: '%s'\n", i, util_name);
-                free(util_name);
+                printf("Util '%s' not found\n", utils_names[i]);
                 break;
             }
-            //printf("util_name[%d]: '%s'\n", i, util_name);
-            free(util_name);
         }
+
+        // Выполнение
         if (utils_ok){
             for (int i = 0; i < commands_count; i++) {
-                //printf("cmd[%d]: '%s'\n", i, commands[i]);
-                int st = exec_command(commands[i], util_name);
+                int st = exec_command(commands[i], utils_names[i]);
                 if (st != 1) {
                     perror("Exec error");
                 }
@@ -60,9 +68,15 @@ int main(){
         }
 
         for (int i = 0; i < commands_count; i++) {
-            free(commands[i]);
+            if (commands[i] != NULL)
+                free(commands[i]);
+            if (utils_names[i] != NULL)
+                free(utils_names[i]);
         }
-        free(commands);
+        if (commands != NULL)
+            free(commands);
+        if (utils_names != NULL)
+            free(utils_names);
     }
     
     return 0;

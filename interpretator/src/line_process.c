@@ -49,7 +49,7 @@ int split_line(char* line, char*** cmd_array){
     return cmd_count;
 }
 
-int check_util(char* command, char** util_name){
+int get_util_name(char* command, char** util_name){
     // Копирую строку для получения имени утилиты без пробелов
     int len = strlen(command);
     char* command_copy = malloc(len + 1);
@@ -58,19 +58,29 @@ int check_util(char* command, char** util_name){
         exit(EXIT_FAILURE);
     }
     strncpy(command_copy, command, len);
+
     // Получаю имя утилиты без пробелов
     char* util = strtok(command_copy, " ");
+    if (util == NULL){
+        perror("strtok");
+        exit(EXIT_FAILURE);
+    }
     int util_name_len = strlen(util);
-    printf("%d\n", util_name_len);
-    printf(">'%s'\n", command_copy);
-    printf(">'%s'\n", util);
+    // Память под массив
     *util_name = malloc(util_name_len+1);
     if (*util_name == NULL){
         perror("Memory allocation");
         exit(EXIT_FAILURE);
     }
     strncpy(*util_name, util, util_name_len);
+    (*util_name)[util_name_len] = '\0';
 
+    free(command_copy);
+
+    return util_name_len;
+}
+
+int check_util(char* util_name){
     // Получию список имеющихся утилит
     struct dirent** utils = NULL;
     int entries_count = scandir(util_bin_dir, &utils, NULL, alphasort);
@@ -82,7 +92,7 @@ int check_util(char* command, char** util_name){
     int util_found = 0;
     for (int i = 2; i < entries_count; i++){ 
         if (utils[i]->d_type == DT_REG){
-            if (strcmp(util, utils[i]->d_name) == 0){
+            if (strcmp(util_name, utils[i]->d_name) == 0){
                 util_found = 1;
             }
         }
@@ -93,7 +103,6 @@ int check_util(char* command, char** util_name){
         free(utils[i]);
     }
     free(utils); utils = NULL;
-    free(command_copy);
     return util_found;
 }
 
