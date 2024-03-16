@@ -59,11 +59,7 @@ int main(){
         // Выполнение
         if (utils_ok){
             for (int i = 0; i < commands_count; i++) {
-                int st = exec_command(commands[i], utils_names[i]);
-                if (st != 1) {
-                    perror("Exec error");
-                    exit(EXIT_FAILURE);
-                }
+                exec_command(commands[i], utils_names[i]);
             }
         }
 

@@ -100,7 +100,7 @@ int check_util(char* util_name){
     return util_found;
 }
 
-int exec_command(char* command, char* util_name){
+void exec_command(char* command, char* util_name){
 
     // Создаем массив аргументов для передачи в новый процесс
     // +1 - Первый аргумент - имя
@@ -145,7 +145,6 @@ int exec_command(char* command, char* util_name){
         break;
     default:
         waitpid(cpid, &cstatus, 0);
-        return 1;
         break;
     }
 }
