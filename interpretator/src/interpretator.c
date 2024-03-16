@@ -48,9 +48,8 @@ int main(){
         // Проверка
         for (int i = 0; i < commands_count; i++){
             get_util_name(commands[i], &(utils_names[i]));
-            int result = check_util(utils_names[i]);
 
-            if (result == 0){
+            if (!check_util(utils_names[i])){
                 utils_ok = 0;
                 printf("Util '%s' not found\n", utils_names[i]);
                 break;
@@ -63,6 +62,7 @@ int main(){
                 int st = exec_command(commands[i], utils_names[i]);
                 if (st != 1) {
                     perror("Exec error");
+                    exit(EXIT_FAILURE);
                 }
             }
         }

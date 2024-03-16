@@ -1,21 +1,35 @@
-CC:=gcc
-CFLAGS:=-g
+.PHONY: all interpretator utils clean
 
-UTILS_D:=./utils
-UTILS_S_D:=$(UTILS_D)/src
-UTILS_O_D:=$(UTILS_D)/obj
-UTILS_B_D:=$(UTILS_D)/bin
+all: interpretator utils
 
-UTILS_LIST:= showdir
+utils:
+	$(MAKE) -C utils all
 
-.PHONY: create_utils_dirs all clean
+interpretator:
+	$(MAKE) -C interpretator all
+
+clean:
+	$(MAKE) -C interpretator clean
+	$(MAKE) -C util clean
+
+#CC:=gcc
+#CFLAGS:=-g
+
+#UTILS_D:=./utils
+#UTILS_S_D:=$(UTILS_D)/src
+#UTILS_O_D:=$(UTILS_D)/obj
+#UTILS_B_D:=$(UTILS_D)/bin
+
+#UTILS_LIST:= showdir
+
+#.PHONY: create_utils_dirs all clean
 
 # $(1) - util_list; $(2) - util_src; $(3) - util_obj; $(4) - util_bin
 
 # create BIN dir for all
 # create OBJ dir for each
-create_utils_dirs:
-	@mkdir -p $(UTILS_B_D) $(UTILS_O_D); \
+#create_utils_dirs:
+#	@mkdir -p $(UTILS_B_D) $(UTILS_O_D); \
 	for i in $(UTILS_LIST); do \
 		mkdir -p $(UTILS_O_D)/$$i ; \
 	done
@@ -40,25 +54,19 @@ create_utils_dirs:
 # _UTIL_OBJ_D - object dir for this util
 # _UTIL_BIN_D - binary dir for this util
 
-define get_util_dirs_files
-	_UTIL_SRC_D := $(UTILS_S_D)/$(1)
-	_UTIL_OBJ_D := $(UTILS_O_D)/$(1)
-	_UTIL_BIN_D := $(UTILS_B_D)
-	_UTIL_SRC_FILES := $(wildcard $(_UTIL_SRC_D)/*.c)
-	_UTIL_OBJ_FILES := $(patsubst $(_UTIL_SRC_D)/%.c,$(_UTIL_OBJ_D)/%.o,$(_UTIL_SRC_FILES))
-endef
+#define get_util_dirs_files
+#	_UTIL_SRC_D := $(UTILS_S_D)/$(1)
+#	_UTIL_OBJ_D := $(UTILS_O_D)/$(1)
+#	_UTIL_BIN_D := $(UTILS_B_D)
+#	_UTIL_SRC_FILES := $(wildcard $(_UTIL_SRC_D)/*.c)
+#	_UTIL_OBJ_FILES := $(patsubst $(_UTIL_SRC_D)/%.c,$(_UTIL_OBJ_D)/%.o,$(_UTIL_SRC_FILES))
+#endef
 
-$(eval $(call get_util_dirs_files,showdir))
-showdir: $(_UTIL_SRC_FILES)
-	$(CC) $(CFLAGS) $^ -o $@
+#$(eval $(call get_util_dirs_files,showdir))
+#showdir: $(_UTIL_SRC_FILES)
+#	$(CC) $(CFLAGS) $^ -o $@
 
-$(_UTIL_OBJ_D)/%.o: $(_UTIL_SRC_D)/%.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+#$(_UTIL_OBJ_D)/%.o: $(_UTIL_SRC_D)/%.c
+#	$(CC) $(CFLAGS) -c $^ -o $@
 
-all: create_utils_dirs showdir
-
-
-
-
-
-
+#all: create_utils_dirs showdir
