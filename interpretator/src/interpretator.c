@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "line_process.h"
 
@@ -19,10 +20,13 @@ int main(){
 
     char input[MAX_LINE_SZ]; 
     char** commands;
+    char* util_name = NULL;
     int commands_count = 0;
 
     int flag = 1;
+    int utils_ok;
     while (flag == 1){
+        utils_ok = 1;
         printf("kekw_interpretator >: ");
         fgets(input, sizeof(input), stdin);
         input[strlen(input)-1] = '\0';
@@ -35,15 +39,26 @@ int main(){
         commands_count = split_line(input, &commands);
 
         for (int i = 0; i < commands_count; i++){
-            printf("cmd[%d]: '%s'\n", i, commands[i]);
+            if (!check_util(commands[i], &util_name)){
+                //printf("Util '%s' not found\n", util_name);
+                utils_ok = 0;
+                //printf("util_name[%d]: '%s'\n", i, util_name);
+                free(util_name);
+                break;
+            }
+            //printf("util_name[%d]: '%s'\n", i, util_name);
+            free(util_name);
         }
-        
-        // if (exec_command(&cmd_info) == 0){
-        //     perror("Binary file not found!\n");
-        //     exit(EXIT_FAILURE);
-        // }
+        if (utils_ok){
+            for (int i = 0; i < commands_count; i++) {
+                //printf("cmd[%d]: '%s'\n", i, commands[i]);
+                int st = exec_command(commands[i], util_name);
+                if (st != 1) {
+                    perror("Exec error");
+                }
+            }
+        }
 
-        // Освобождаем память, выделенную для массива
         for (int i = 0; i < commands_count; i++) {
             free(commands[i]);
         }
