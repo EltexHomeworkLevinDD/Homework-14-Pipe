@@ -32,6 +32,9 @@ Returns 1 if util found
 util_name - empty char** pointer for util_name, free it by yourself
 */
 int check_util(char* util_name);
+/*
+Destroys command string
+*/
 void exec_command(char* command, char* util_name);
 int get_util_name(char* command, char** util_name);
 #endif

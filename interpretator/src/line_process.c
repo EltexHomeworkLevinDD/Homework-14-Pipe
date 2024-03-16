@@ -100,17 +100,7 @@ int check_util(char* util_name){
     return util_found;
 }
 
-void exec_command(char* command, char* util_name){
-
-    // Создаем массив аргументов для передачи в новый процесс
-    // +1 - Первый аргумент - имя
-    // +1 - Второй аргумент - строка
-    // +1 - Последний аргумент NULL
-    char *args[3];
-    args[0] = util_name;
-    args[1] = command;
-    args[2] = NULL;
-  
+void exec_command(char* command, char* util_name){  
     // Формируем полный путь к утилите
     char full_util_pathname[PATH_MAX];
     if (getcwd(full_util_pathname, PATH_MAX) == NULL) {
@@ -118,15 +108,60 @@ void exec_command(char* command, char* util_name){
         exit(EXIT_FAILURE);
     }
 
-    // Получить каноничный полный путь (без ../)
+    // Получить каноничный полный путь к директории с бинарником (без ../)
     char* canonical_dest_path = canonicalize_file_name(util_bin_dir);
     if (canonical_dest_path == NULL) {
         perror("canonicalize_file_name");
         exit(EXIT_FAILURE);
     }
-
+    // Формирование строки полного пути к бинарнику
     snprintf(full_util_pathname, PATH_MAX, "%s/%s", canonical_dest_path, util_name);
     free(canonical_dest_path);
+
+    // Определяем количество аргументов (без защиты '')
+    int argc = 0;
+    int command_len = strlen(command);
+    char* command_copy = malloc((command_len+1)*sizeof(char));
+    char* token = strtok(command_copy, " ");
+    argc++;
+    while (token != NULL){
+        token = strtok(NULL, " ");
+        argc++;
+    }
+    free(command_copy);
+    token = NULL;
+
+    // Разбиваем на пробелы (без защиты '')
+    // Создаем массив аргументов для передачи в новый процесс
+    char *args[argc + 1]; // +1 for NULL
+    token = strtok(command, " ");
+    int index = 0;
+    while (token != NULL) {
+        // Получаем длину текущего токена
+        int len = strlen(token);
+        
+        // Выделяем память для текущего аргумента в массиве args
+        args[index] = malloc((len + 1) * sizeof(char));
+        if (args[index] == NULL) {
+            perror("malloc");
+            exit(EXIT_FAILURE);
+        }
+        
+        // Копируем текущий токен в массив args
+        strncpy(args[index], token, len);
+        args[index][len] = '\0'; // Устанавливаем завершающий нуль
+        
+        // Переходим к следующему токену
+        token = strtok(NULL, " ");
+        index++;
+    }
+    args[index] = NULL; // Последний элемент массива аргументов должен быть NULL
+
+    // for (int i = 0; i < argc; i++)
+    // {
+    //     printf("<%d>: '%s'\n", i, args[i]);
+    // }
+    
 
     // Создаём дочерний процесс для бинарника
     pid_t cpid = fork();
