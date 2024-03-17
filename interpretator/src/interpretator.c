@@ -106,8 +106,44 @@ int main(){
                         close(pipefd[WRITE_PIPE]);
                     } 
                     // [C] Если команд больше двух, использовать 2 pipe
+                    // !!! Если канал будет заполнен, то записать ничего не выйдет 
                     else {
+                        // Создать 2 pipe и сделать цикл для всех команд если их больше двух
+                        int pipefd1[2];
+                        int pipefd2[2];
+                        if (pipe(pipefd1) == -1 || pipe(pipefd2) == -1) {
+                            perror("pipe");
+                            exit(EXIT_FAILURE);
+                        }
 
+                        pid_t pid;
+                        for (int i = 0; i < commands_count; i++){
+                            pid = fork_command();
+                            if (pid == 0) {
+                                // Первая команда
+                                if (i == 0){
+                                    close(pipefd1[READ_PIPE]);
+                                    dup2(pipefd1[WRITE_PIPE], STDOUT_FILENO);
+                                }
+                                // Последняя команда
+                                else if (i == commands_count-1){
+                                    close(pipefd1[WRITE_PIPE]);
+                                    dup2(pipefd1[READ_PIPE], STDIN_FILENO);
+                                // Промежуточная команда
+                                } else {
+                                    dup2(pipefd1[READ_PIPE], STDIN_FILENO);
+                                    dup2(pipefd1[WRITE_PIPE], STDOUT_FILENO);
+                                }
+                                exec_command(commands[i], utils_names[i]);
+                            }
+                            wait_command(pid);
+                        }
+                        
+
+                        close(pipefd1[READ_PIPE]);
+                        close(pipefd1[WRITE_PIPE]);
+                        close(pipefd2[READ_PIPE]);
+                        close(pipefd2[WRITE_PIPE]);
                     }
                 } 
                 // [A] Если команда всего одна
@@ -121,13 +157,6 @@ int main(){
                     wait_command(pid);
                 }
         }
-
-        // Выполнение
-        // if (utils_ok){
-        //     for (int i = 0; i < commands_count; i++) {
-        //         exec_command(commands[i], utils_names[i]);
-        //     }
-        // }
 
         for (int i = 0; i < commands_count; i++) {
             if (commands[i] != NULL)
