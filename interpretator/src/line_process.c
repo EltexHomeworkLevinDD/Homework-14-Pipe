@@ -172,32 +172,8 @@ void exec_command(char* command, char* util_name){
     }
     args[index] = NULL; // Последний элемент массива аргументов должен быть NULL
 
-    // for (int i = 0; i < argc; i++)
-    // {
-    //     printf("<%d>: '%s'\n", i, args[i]);
-    // }
-    
     execv(full_util_pathname, args);
     // if its wrong
     perror("execv");
     exit(EXIT_FAILURE);
-    // Создаём дочерний процесс для бинарника
-    // pid_t cpid = fork();
-    // int cstatus;
-    // switch (cpid)
-    // {
-    // case -1:
-    //     perror("fork");
-    //     exit(EXIT_FAILURE);
-    //     break;
-    // case 0:
-    //     execv(full_util_pathname, args);
-
-    //     perror("execv");
-    //     exit(EXIT_FAILURE);
-    //     break;
-    // default:
-    //     waitpid(cpid, &cstatus, 0);
-    //     break;
-    // }
 }
