@@ -15,6 +15,8 @@
 #include "line_process.h"
 
 #define CMD_EXIT "exit"
+#define READ_PIPE 0
+#define WRITE_PIPE 1
 
 int main(){
 
@@ -56,12 +58,76 @@ int main(){
             }
         }
 
-        // Выполнение
+        // A - если одна команда, не использовать pipe, просто выполнить
+        // B - если команды две, использовать 1 pipe
+        // С - если команд больше двух, использовать 2 pipe
         if (utils_ok){
-            for (int i = 0; i < commands_count; i++) {
-                exec_command(commands[i], utils_names[i]);
-            }
+                // [B/C]Если команд больше одной, использовать pipe
+                if (commands_count > 1)
+                { 
+                    // [B] Если команды всего две, использовать 1 pipe
+                    if (commands_count == 2)
+                    {
+                        // Создать 1 pipe
+                        int pipefd[2];
+                        if (pipe(pipefd) == -1) {
+                            perror("pipe");
+                            exit(EXIT_FAILURE);
+                        }
+                        pid_t pid;
+                        // Выполнить команды последовательно
+                        for (int i = 0; i < commands_count; i++){
+                            if (i == 0) 
+                            {
+                                pid = fork_command();
+                                if (pid == 0){
+                                    close(pipefd[READ_PIPE]);
+                                    dup2(pipefd[WRITE_PIPE], STDOUT_FILENO);
+                                    close(pipefd[WRITE_PIPE]);
+
+                                    exec_command(commands[i], utils_names[i]);
+                                }
+                                wait_command(pid);
+                            }
+                            else 
+                            {
+                                pid = fork_command();
+                                if (pid == 0){
+                                    close(pipefd[WRITE_PIPE]);
+                                    dup2(pipefd[READ_PIPE], STDIN_FILENO);
+                                    close(pipefd[READ_PIPE]);
+
+                                    exec_command(commands[i], utils_names[i]);
+                                }
+                                wait_command(pid);
+                            }
+                        }
+                        close(pipefd[READ_PIPE]);
+                        close(pipefd[WRITE_PIPE]);
+                    } 
+                    // [C] Если команд больше двух, использовать 2 pipe
+                    else {
+
+                    }
+                } 
+                // [A] Если команда всего одна
+                else {
+                    printf("Commands: 1\n");
+                    pid_t pid;
+                    pid = fork_command();
+                    if (pid == 0) 
+                        exec_command(commands[0], utils_names[0]);
+
+                    wait_command(pid);
+                }
         }
+
+        // Выполнение
+        // if (utils_ok){
+        //     for (int i = 0; i < commands_count; i++) {
+        //         exec_command(commands[i], utils_names[i]);
+        //     }
+        // }
 
         for (int i = 0; i < commands_count; i++) {
             if (commands[i] != NULL)

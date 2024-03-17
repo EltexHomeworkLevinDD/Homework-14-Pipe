@@ -100,6 +100,21 @@ int check_util(char* util_name){
     return util_found;
 }
 
+pid_t fork_command(void){
+    pid_t pid = fork();
+    if (pid == -1){
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    return pid;
+}
+
+int wait_command(pid_t pid){
+    int status;
+    waitpid(pid, &status, 0);
+    return status;
+}
+
 void exec_command(char* command, char* util_name){  
     // Формируем полный путь к утилите
     char full_util_pathname[PATH_MAX];
@@ -162,24 +177,27 @@ void exec_command(char* command, char* util_name){
     //     printf("<%d>: '%s'\n", i, args[i]);
     // }
     
-
+    execv(full_util_pathname, args);
+    // if its wrong
+    perror("execv");
+    exit(EXIT_FAILURE);
     // Создаём дочерний процесс для бинарника
-    pid_t cpid = fork();
-    int cstatus;
-    switch (cpid)
-    {
-    case -1:
-        perror("fork");
-        exit(EXIT_FAILURE);
-        break;
-    case 0:
-        execv(full_util_pathname, args);
+    // pid_t cpid = fork();
+    // int cstatus;
+    // switch (cpid)
+    // {
+    // case -1:
+    //     perror("fork");
+    //     exit(EXIT_FAILURE);
+    //     break;
+    // case 0:
+    //     execv(full_util_pathname, args);
 
-        perror("execv");
-        exit(EXIT_FAILURE);
-        break;
-    default:
-        waitpid(cpid, &cstatus, 0);
-        break;
-    }
+    //     perror("execv");
+    //     exit(EXIT_FAILURE);
+    //     break;
+    // default:
+    //     waitpid(cpid, &cstatus, 0);
+    //     break;
+    // }
 }

@@ -35,6 +35,8 @@ int check_util(char* util_name);
 /*
 Destroys command string
 */
+pid_t fork_command(void);
+int wait_command(pid_t pid);
 void exec_command(char* command, char* util_name);
 int get_util_name(char* command, char** util_name);
 #endif
