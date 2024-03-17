@@ -10,7 +10,7 @@ interpretator:
 
 clean:
 	$(MAKE) -C interpretator clean
-	$(MAKE) -C util clean
+	$(MAKE) -C utils clean
 
 #CC:=gcc
 #CFLAGS:=-g
